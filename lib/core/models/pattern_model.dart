@@ -36,15 +36,26 @@ class PatternModel extends HiveObject {
   });
 
   static PatternModel createNew({
+    required String id,
     required String fileName,
     required String path
   }) {
     return PatternModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: id, // Używamy przekazanego ID
       originalFileName: fileName,
-      customName: fileName.split('.').first,
+      customName: fileName.replaceAll('.pdf', '').trim(),
       localFilePath: path,
       dateAdded: DateTime.now().toString(),
+    );
+  }
+
+  static PatternModel empty() {
+    return PatternModel(
+      id: '',
+      originalFileName: '',
+      customName: '',
+      localFilePath: '',
+      dateAdded: '',
     );
   }
 }
