@@ -27,4 +27,10 @@ class PatternNotifier extends StateNotifier<List<PatternModel>> {
     await box.delete(id);
     _loadPatterns();
   }
+
+  Future<void> updatePattern(PatternModel pattern) async {
+    final box = Hive.box<PatternModel>('patterns');
+    await box.put(pattern.id, pattern); // put z tym samym kluczem nadpisze obiekt
+    _loadPatterns();
+  }
 }

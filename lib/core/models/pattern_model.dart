@@ -1,20 +1,20 @@
 import 'package:hive/hive.dart';
 
-part 'pattern_model.g.dart'; //jesli sie swieci to zignoruj generuje sie w tle!!
+part 'pattern_model.g.dart'; // Jeśli się świeci, zignoruj – generuje się w tle!
 
 @HiveType(typeId: 0)
 class PatternModel extends HiveObject {
   @HiveField(0)
-  late String id; //unique id
+  late String id;
 
   @HiveField(1)
-  late String originalFileName; //nazwa pliku z dysku
+  late String originalFileName;
 
   @HiveField(2)
-  late String customName; //nazwa uzytkownika
+  late String customName;
 
   @HiveField(3)
-  late String localFilePath; //url do pdf w pamieci
+  late String localFilePath;
 
   @HiveField(4)
   late String dateAdded;
@@ -38,10 +38,10 @@ class PatternModel extends HiveObject {
   static PatternModel createNew({
     required String id,
     required String fileName,
-    required String path
+    required String path,
   }) {
     return PatternModel(
-      id: id, // Używamy przekazanego ID
+      id: id,
       originalFileName: fileName,
       customName: fileName.replaceAll('.pdf', '').trim(),
       localFilePath: path,
@@ -56,6 +56,27 @@ class PatternModel extends HiveObject {
       customName: '',
       localFilePath: '',
       dateAdded: '',
+    );
+  }
+
+  // Metoda do łatwego tworzenia kopii obiektu ze zmienionymi polami
+  PatternModel copyWith({
+    String? id,
+    String? originalFileName,
+    String? customName,
+    String? localFilePath,
+    String? dateAdded,
+    String? isFavourite,
+    String? userNotes,
+  }) {
+    return PatternModel(
+      id: id ?? this.id,
+      originalFileName: originalFileName ?? this.originalFileName,
+      customName: customName ?? this.customName,
+      localFilePath: localFilePath ?? this.localFilePath,
+      dateAdded: dateAdded ?? this.dateAdded,
+      isFavourite: isFavourite ?? this.isFavourite,
+      userNotes: userNotes ?? this.userNotes,
     );
   }
 }

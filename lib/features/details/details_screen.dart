@@ -11,6 +11,43 @@ class DetailsScreen extends ConsumerWidget {
 
   const DetailsScreen({super.key, required this.patternId});
 
+  // --- Metoda do pokazywania dialogu edycji nazwy ---
+  void _showEditNameDialog(BuildContext context, WidgetRef ref, PatternModel pattern) {
+    final textController = TextEditingController(text: pattern.customName);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Zmień nazwę wzoru'),
+          content: TextField(
+            controller: textController,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Wpisz nową nazwę'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Anuluj'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            TextButton(
+              child: const Text('Zapisz'),
+              onPressed: () {
+                final newName = textController.text.trim();
+                if (newName.isNotEmpty) {
+                  final updatedPattern = pattern.copyWith(customName: newName);
+                  ref.read(patternProvider.notifier).updatePattern(updatedPattern);
+                }
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- Metoda do usuwania wzoru ---
   void _deletePattern(BuildContext context, WidgetRef ref, PatternModel pattern) {
     showDialog(
       context: context,
@@ -54,6 +91,12 @@ class DetailsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(pattern.customName),
         actions: [
+          // --- Przycisk Edytuj ---
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => _showEditNameDialog(context, ref, pattern),
+          ),
+          // --- Przycisk Usuń ---
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _deletePattern(context, ref, pattern),
