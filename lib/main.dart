@@ -12,11 +12,10 @@ import 'features/settings/settings_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Inicjalizacja Hive
   final appDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(appDocumentDir.path);
-  Hive.registerAdapter(PatternModelAdapter()); // Wymagane przez Hive
-  await Hive.openBox<PatternModel>('patterns'); // Otwieramy główne pudełko
+  Hive.registerAdapter(PatternModelAdapter());
+  await Hive.openBox<PatternModel>('patterns');
 
   runApp(
     const ProviderScope(
@@ -30,14 +29,15 @@ class CroftyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Użyjemy Providera do zarządzania motywem (prosty przykład)
-    // final isDark = ref.watch(themeModeProvider);
+    // Nasłuchujemy zmian w themeNotifierProvider
+    final isDarkMode = ref.watch(themeNotifierProvider);
 
     return MaterialApp(
       title: 'Crofty - Organizer Wzorów',
       debugShowCheckedModeBanner: false,
-      theme: crochetLightTheme, // Nasz zdefiniowany motyw
-      // themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      theme: crochetLightTheme, // Motyw jasny
+      darkTheme: crochetDarkTheme, // Motyw ciemny
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light, // Wybieramy tryb
       home: const MainScreen(),
     );
   }
@@ -54,9 +54,9 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const LibraryScreen(), // 📚 Biblioteka
-    const FavoritesScreen(), // ⭐ Ulubione
-    const SettingsScreen(), // ⚙️ Ustawienia
+    const LibraryScreen(),
+    const FavoritesScreen(),
+    const SettingsScreen(),
   ];
 
   @override
@@ -66,10 +66,7 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        selectedItemColor: kMint,
-        unselectedItemColor: kBrown.withOpacity(0.6),
-        backgroundColor: Colors.white,
-        elevation: 10,
+        // Usunięto zduplikowane ustawienia kolorów, teraz będą pobierane z motywu
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.book_outlined),
@@ -91,11 +88,9 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-// Potrzebujesz jeszcze pustych plików LibraryScreen, FavoritesScreen i SettingsScreen
-// aby projekt się kompilował.//mordooo
 
-//github commit push komendy
 
+//NIE USUWAJ LINII PONIZEJ
 //git add .
-// git commit -m "Twoja zmiana"
-// git push origin main
+//git commit -m "zmiana"
+//git push origin main
