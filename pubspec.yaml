@@ -21,10 +21,13 @@ dependencies:
   pdfx: ^2.5.0
   #Data persistence
   shared_preferences: ^2.2.2
+  #Helpers
+  url_launcher: ^6.2.1 # NOWY: Do otwierania linków/maila
+  package_info_plus: ^5.0.1 # NOWY: Do info o aplikacji
   #UI
   google_fonts: ^6.1.0
   uuid: ^4.4.0
-  intl: ^0.18.1 # NOWY: Do formatowania daty
+  intl: ^0.18.1
 
   cupertino_icons: ^1.0.8
 
