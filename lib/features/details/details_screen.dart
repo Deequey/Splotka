@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 import '../../core/models/pattern_model.dart';
@@ -41,7 +43,8 @@ class DetailsScreen extends ConsumerWidget {
               },
             ),
           ],
-        );},
+        );
+      },
     );
   }
 
@@ -60,10 +63,9 @@ class DetailsScreen extends ConsumerWidget {
             TextButton(
               child: const Text('Usuń'),
               onPressed: () async {
-                // --- POPRAWKA TUTAJ ---
                 await ref.read(fileServiceProvider).deletePattern(pattern);
-                Navigator.of(dialogContext).pop(); 
-                Navigator.of(context).pop(); 
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -79,11 +81,12 @@ class DetailsScreen extends ConsumerWidget {
 
     if (pattern.id.isEmpty) {
       return const Scaffold(
-        body: Center(
-          child: Text('Wzór nie został znaleziony.'),
-        ),
+        body: Center(child: Text('Wzór nie został znaleziony.')),
       );
     }
+
+    // Formatowanie daty
+    final formattedDate = DateFormat('dd.MM.yyyy, HH:mm').format(DateTime.parse(pattern.dateAdded));
 
     return Scaffold(
       appBar: AppBar(
@@ -106,16 +109,43 @@ class DetailsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('To są szczegóły wzoru: ${pattern.customName}'),
-            const SizedBox(height: 20),
-            Text('Oryginalna nazwa pliku: ${pattern.originalFileName}'),
-            Text('Data dodania: ${pattern.dateAdded}'),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // --- Podgląd miniaturki ---
+          if (pattern.thumbnailPath.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.0),
+              child: Image.file(
+                File(pattern.thumbnailPath),
+                fit: BoxFit.cover,
+                height: 250,
+              ),
+            ),
+          const SizedBox(height: 24),
+
+          // --- Sekcja z informacjami ---
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: const Text('Oryginalna nazwa pliku'),
+                    subtitle: Text(pattern.originalFileName, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today_outlined),
+                    title: const Text('Data dodania'),
+                    subtitle: Text(formattedDate),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => OpenFilex.open(pattern.localFilePath),
