@@ -18,7 +18,9 @@ dependencies:
   file_selector: ^1.0.0
   open_filex: ^4.3.2
   #PDF
-  pdfx: ^2.5.0 # NOWY: Do generowania miniaturek PDF
+  pdfx: ^2.5.0
+  #Data persistence
+  shared_preferences: ^2.2.2 # NOWY: Do zapisywania ustawień
   #UI
   google_fonts: ^6.1.0
   uuid: ^4.4.0

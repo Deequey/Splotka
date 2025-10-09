@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // --- Kolory ---
 const Color kBeige = Color(0xFFF8F1E4);
@@ -16,15 +17,25 @@ const Color kLightBrown = Color(0xFFE0CDB4);
 
 // --- Provider do zarządzania motywem ---
 final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, bool>((ref) {
-  // `true` oznacza motyw ciemny
   return ThemeNotifier();
 });
 
 class ThemeNotifier extends StateNotifier<bool> {
-  ThemeNotifier() : super(false); // Domyślnie motyw jasny
+  static const _themePrefKey = 'isDarkMode';
 
-  void toggleTheme() {
+  ThemeNotifier() : super(false) {
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(_themePrefKey) ?? false;
+  }
+
+  Future<void> toggleTheme() async {
     state = !state;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_themePrefKey, state);
   }
 }
 
