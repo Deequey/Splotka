@@ -20,7 +20,7 @@ class PatternModel extends HiveObject {
   late String dateAdded;
 
   @HiveField(5)
-  late String isFavourite;
+  late bool isFavourite; // ZMIANA: String -> bool
 
   @HiveField(6)
   late String userNotes;
@@ -31,7 +31,7 @@ class PatternModel extends HiveObject {
     required this.customName,
     required this.localFilePath,
     required this.dateAdded,
-    this.isFavourite = 'false',
+    this.isFavourite = false, // ZMIANA: 'false' -> false
     this.userNotes = '',
   });
 
@@ -56,17 +56,17 @@ class PatternModel extends HiveObject {
       customName: '',
       localFilePath: '',
       dateAdded: '',
+      isFavourite: false,
     );
   }
 
-  // Metoda do łatwego tworzenia kopii obiektu ze zmienionymi polami
   PatternModel copyWith({
     String? id,
     String? originalFileName,
     String? customName,
     String? localFilePath,
     String? dateAdded,
-    String? isFavourite,
+    bool? isFavourite, // ZMIANA: String? -> bool?
     String? userNotes,
   }) {
     return PatternModel(

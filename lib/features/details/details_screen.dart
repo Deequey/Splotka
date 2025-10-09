@@ -11,7 +11,6 @@ class DetailsScreen extends ConsumerWidget {
 
   const DetailsScreen({super.key, required this.patternId});
 
-  // --- Metoda do pokazywania dialogu edycji nazwy ---
   void _showEditNameDialog(BuildContext context, WidgetRef ref, PatternModel pattern) {
     final textController = TextEditingController(text: pattern.customName);
 
@@ -47,7 +46,6 @@ class DetailsScreen extends ConsumerWidget {
     );
   }
 
-  // --- Metoda do usuwania wzoru ---
   void _deletePattern(BuildContext context, WidgetRef ref, PatternModel pattern) {
     showDialog(
       context: context,
@@ -91,12 +89,18 @@ class DetailsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(pattern.customName),
         actions: [
-          // --- Przycisk Edytuj ---
+          // --- Przycisk Ulubione ---
+          IconButton(
+            icon: Icon(pattern.isFavourite ? Icons.star : Icons.star_border),
+            onPressed: () {
+              final updatedPattern = pattern.copyWith(isFavourite: !pattern.isFavourite);
+              ref.read(patternProvider.notifier).updatePattern(updatedPattern);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => _showEditNameDialog(context, ref, pattern),
           ),
-          // --- Przycisk Usuń ---
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _deletePattern(context, ref, pattern),

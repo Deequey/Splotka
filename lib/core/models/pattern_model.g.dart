@@ -22,7 +22,7 @@ class PatternModelAdapter extends TypeAdapter<PatternModel> {
       customName: fields[2] as String,
       localFilePath: fields[3] as String,
       dateAdded: fields[4] as String,
-      isFavourite: fields[5] as String,
+      isFavourite: fields[5] as bool,
       userNotes: fields[6] as String,
     );
   }
