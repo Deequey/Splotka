@@ -94,7 +94,8 @@ class _MainScreenState extends State<MainScreen> {
 // Potrzebujesz jeszcze pustych plików LibraryScreen, FavoritesScreen i SettingsScreen
 // aby projekt się kompilował.//mordooo
 
-//github commit push
+//github commit push komendy
+
 //git add .
 // git commit -m "Twoja zmiana"
 // git push origin main

@@ -17,7 +17,6 @@ final ThemeData crochetLightTheme = ThemeData(
     surface: Colors.white,
     onPrimary: Colors.black87,
     onSurface: kBrown,
-    background: kBeige,
   ),
   appBarTheme: const AppBarTheme(
     backgroundColor: kBeige,

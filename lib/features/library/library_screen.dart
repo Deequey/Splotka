@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
 import '../../data/services/file_service.dart';
 import '../../providers/pattern_providers.dart';
+import '../details/details_screen.dart';
 
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
@@ -66,22 +67,32 @@ class LibraryScreen extends ConsumerWidget {
                     itemCount: patterns.length,
                     itemBuilder: (context, index) {
                       final pattern = patterns[index];
-                      return Card(
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailsScreen(patternId: pattern.id),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                pattern.customName,
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                          );
+                        },
+                        child: Card(
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
                               ),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  pattern.customName,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

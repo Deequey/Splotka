@@ -1,30 +1,22 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// Import 'package:easypatterns/main.dart' jest poprawny, ponieważ 'easypatterns'
+// to nazwa Twojego pakietu zdefiniowana w pliku pubspec.yaml.
 import 'package:easypatterns/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Renders main screen and finds the library title', (WidgetTester tester) async {
+    // Budujemy aplikację. Ponieważ CroftyApp używa Riverpod (jest ConsumerWidget),
+    // musimy opakować ją w ProviderScope.
+    await tester.pumpWidget(const ProviderScope(child: CroftyApp()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Pierwszym ekranem jest Biblioteka (LibraryScreen).
+    // Sprawdzamy, czy jej tytuł jest widoczny w AppBar.
+    expect(find.text('Moje Wzory'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Dodatkowo sprawdzamy, czy etykieta z paska nawigacji jest widoczna.
+    expect(find.text('Biblioteka'), findsOneWidget);
   });
 }
