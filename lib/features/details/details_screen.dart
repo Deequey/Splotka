@@ -41,8 +41,7 @@ class DetailsScreen extends ConsumerWidget {
               },
             ),
           ],
-        );
-      },
+        );},
     );
   }
 
@@ -61,7 +60,8 @@ class DetailsScreen extends ConsumerWidget {
             TextButton(
               child: const Text('Usuń'),
               onPressed: () async {
-                await ref.read(fileServiceProvider).deletePattern(pattern.id, pattern.localFilePath);
+                // --- POPRAWKA TUTAJ ---
+                await ref.read(fileServiceProvider).deletePattern(pattern);
                 Navigator.of(dialogContext).pop(); 
                 Navigator.of(context).pop(); 
               },
@@ -89,7 +89,6 @@ class DetailsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(pattern.customName),
         actions: [
-          // --- Przycisk Ulubione ---
           IconButton(
             icon: Icon(pattern.isFavourite ? Icons.star : Icons.star_border),
             onPressed: () {

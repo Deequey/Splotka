@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/models/pattern_model.dart';
@@ -31,17 +32,31 @@ class FileService {
     final appDir = await getApplicationDocumentsDirectory();
     final uniqueId = _uuid.v4();
 
+    // Tworzenie dedykowanych folderów
     final patternsDir = Directory('${appDir.path}/patterns');
-    if (!await patternsDir.exists()) {
-      await patternsDir.create(recursive: true);
-    }
+    final thumbnailsDir = Directory('${appDir.path}/thumbnails');
+    if (!await patternsDir.exists()) await patternsDir.create(recursive: true);
+    if (!await thumbnailsDir.exists()) await thumbnailsDir.create(recursive: true);
 
     final newFilePath = '${patternsDir.path}/$uniqueId.pdf';
+    final newThumbnailPath = '${thumbnailsDir.path}/$uniqueId.png';
 
     try {
       await file.saveTo(newFilePath);
+
+      // --- Generowanie miniaturki ---
+      final pdfDoc = await PdfDocument.openFile(newFilePath);
+      final page = await pdfDoc.getPage(1);
+      final pageImage = await page.render(width: page.width, height: page.height);
+      await File(newThumbnailPath).writeAsBytes(pageImage!.bytes);
+      await page.close();
+      // -----------------------------
+
     } catch (e) {
-      debugPrint('Błąd kopiowania pliku: $e');
+      debugPrint('Błąd przetwarzania pliku PDF: $e');
+      // W razie błędu usuń niekompletne pliki
+      final pdfFile = File(newFilePath);
+      if (await pdfFile.exists()) await pdfFile.delete();
       return;
     }
 
@@ -49,22 +64,33 @@ class FileService {
       id: uniqueId,
       fileName: file.name,
       path: newFilePath,
+      thumbnailPath: newThumbnailPath, // Zapisujemy ścieżkę do miniaturki
     );
 
     await _ref.read(patternProvider.notifier).addPattern(newPattern);
   }
 
-  Future<void> deletePattern(String patternId, String filePath) async {
+  Future<void> deletePattern(PatternModel pattern) async {
+    // Usuwanie pliku PDF
     try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        await file.delete();
+      final pdfFile = File(pattern.localFilePath);
+      if (await pdfFile.exists()) {
+        await pdfFile.delete();
       }
     } catch (e) {
-      debugPrint('Błąd usuwania pliku: $e');
-      // Nawet jeśli plik się nie usunie, kontynuujemy usuwanie z bazy
+      debugPrint('Błąd usuwania pliku PDF: $e');
     }
-    
-    await _ref.read(patternProvider.notifier).removePattern(patternId);
+
+    // Usuwanie miniaturki
+    try {
+      final thumbnailFile = File(pattern.thumbnailPath);
+      if (await thumbnailFile.exists()) {
+        await thumbnailFile.delete();
+      }
+    } catch (e) {
+      debugPrint('Błąd usuwania miniaturki: $e');
+    }
+
+    await _ref.read(patternProvider.notifier).removePattern(pattern.id);
   }
 }

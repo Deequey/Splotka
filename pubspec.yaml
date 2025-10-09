@@ -16,7 +16,9 @@ dependencies:
   #file operators
   path_provider: ^2.1.1
   file_selector: ^1.0.0
-  open_filex: ^4.3.2 # Zastąpiono open_file_plus
+  open_filex: ^4.3.2
+  #PDF
+  pdfx: ^2.5.0 # NOWY: Do generowania miniaturek PDF
   #UI
   google_fonts: ^6.1.0
   uuid: ^4.4.0

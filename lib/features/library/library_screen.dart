@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +48,7 @@ class LibraryScreen extends ConsumerWidget {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Theme.of(context).cardTheme.color,
               ),
             ),
           ),
@@ -77,10 +78,17 @@ class LibraryScreen extends ConsumerWidget {
                           );
                         },
                         child: Card(
+                          clipBehavior: Clip.antiAlias, // Ważne dla zaokrąglenia obrazka
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Expanded(
-                                child: Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
+                                child: pattern.thumbnailPath.isNotEmpty
+                                    ? Image.file(
+                                        File(pattern.thumbnailPath),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),

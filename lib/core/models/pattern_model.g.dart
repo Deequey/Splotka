@@ -24,13 +24,14 @@ class PatternModelAdapter extends TypeAdapter<PatternModel> {
       dateAdded: fields[4] as String,
       isFavourite: fields[5] as bool,
       userNotes: fields[6] as String,
+      thumbnailPath: fields[7] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, PatternModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class PatternModelAdapter extends TypeAdapter<PatternModel> {
       ..writeByte(5)
       ..write(obj.isFavourite)
       ..writeByte(6)
-      ..write(obj.userNotes);
+      ..write(obj.userNotes)
+      ..writeByte(7)
+      ..write(obj.thumbnailPath);
   }
 
   @override

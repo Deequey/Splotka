@@ -1,7 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/models/pattern_model.dart';
 import '../../core/theme.dart';
 import '../../providers/pattern_providers.dart';
 import '../details/details_screen.dart';
@@ -11,7 +11,6 @@ class FavoritesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Używamy nowego providera, który dostarcza tylko ulubione wzory
     final favoritePatterns = ref.watch(favoritePatternsProvider);
 
     return Scaffold(
@@ -43,10 +42,17 @@ class FavoritesScreen extends ConsumerWidget {
                     );
                   },
                   child: Card(
+                    clipBehavior: Clip.antiAlias,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
-                          child: Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
+                          child: pattern.thumbnailPath.isNotEmpty
+                              ? Image.file(
+                                  File(pattern.thumbnailPath),
+                                  fit: BoxFit.cover,
+                                )
+                              : Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),

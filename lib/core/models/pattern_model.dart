@@ -20,10 +20,13 @@ class PatternModel extends HiveObject {
   late String dateAdded;
 
   @HiveField(5)
-  late bool isFavourite; // ZMIANA: String -> bool
+  late bool isFavourite;
 
   @HiveField(6)
   late String userNotes;
+
+  @HiveField(7) // NOWE POLE
+  late String thumbnailPath;
 
   PatternModel({
     required this.id,
@@ -31,14 +34,16 @@ class PatternModel extends HiveObject {
     required this.customName,
     required this.localFilePath,
     required this.dateAdded,
-    this.isFavourite = false, // ZMIANA: 'false' -> false
+    this.isFavourite = false,
     this.userNotes = '',
+    this.thumbnailPath = '', // NOWE
   });
 
   static PatternModel createNew({
     required String id,
     required String fileName,
     required String path,
+    required String thumbnailPath, // NOWE
   }) {
     return PatternModel(
       id: id,
@@ -46,6 +51,7 @@ class PatternModel extends HiveObject {
       customName: fileName.replaceAll('.pdf', '').trim(),
       localFilePath: path,
       dateAdded: DateTime.now().toString(),
+      thumbnailPath: thumbnailPath, // NOWE
     );
   }
 
@@ -57,6 +63,7 @@ class PatternModel extends HiveObject {
       localFilePath: '',
       dateAdded: '',
       isFavourite: false,
+      thumbnailPath: '', // NOWE
     );
   }
 
@@ -66,8 +73,9 @@ class PatternModel extends HiveObject {
     String? customName,
     String? localFilePath,
     String? dateAdded,
-    bool? isFavourite, // ZMIANA: String? -> bool?
+    bool? isFavourite,
     String? userNotes,
+    String? thumbnailPath, // NOWE
   }) {
     return PatternModel(
       id: id ?? this.id,
@@ -77,6 +85,7 @@ class PatternModel extends HiveObject {
       dateAdded: dateAdded ?? this.dateAdded,
       isFavourite: isFavourite ?? this.isFavourite,
       userNotes: userNotes ?? this.userNotes,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath, // NOWE
     );
   }
 }
