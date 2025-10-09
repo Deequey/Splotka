@@ -23,7 +23,8 @@ class LibraryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final patterns = ref.watch(patternProvider);
+    // ZMIANA: Obserwujemy przefiltrowaną listę, a nie całą
+    final patterns = ref.watch(filteredPatternsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -50,12 +51,16 @@ class LibraryScreen extends ConsumerWidget {
                 filled: true,
                 fillColor: Theme.of(context).cardTheme.color,
               ),
+              // ZMIANA: Aktualizujemy provider przy każdej zmianie tekstu
+              onChanged: (query) {
+                ref.read(searchQueryProvider.notifier).state = query;
+              },
             ),
           ),
           Expanded(
             child: patterns.isEmpty
                 ? const Center(
-                    child: Text('Brak wzorów. Dodaj nowy za pomocą przycisku +.', style: TextStyle(color: kBrown)),
+                    child: Text('Brak wzorów pasujących do wyszukiwania.', style: TextStyle(color: kBrown)),
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(8.0),
@@ -78,7 +83,7 @@ class LibraryScreen extends ConsumerWidget {
                           );
                         },
                         child: Card(
-                          clipBehavior: Clip.antiAlias, // Ważne dla zaokrąglenia obrazka
+                          clipBehavior: Clip.antiAlias,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [

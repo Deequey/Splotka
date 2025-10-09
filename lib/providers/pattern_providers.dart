@@ -7,12 +7,34 @@ final patternProvider = StateNotifierProvider<PatternNotifier, List<PatternModel
   return PatternNotifier();
 });
 
-// NOWY: Provider, który udostępnia przefiltrowaną listę (tylko ulubione)
-// Automatycznie odświeży się, gdy zmienią się wzory w patternProvider
+// Provider dla listy ulubionych
 final favoritePatternsProvider = Provider<List<PatternModel>>((ref) {
   final allPatterns = ref.watch(patternProvider);
   return allPatterns.where((pattern) => pattern.isFavourite).toList();
 });
+
+// --- WYSZUKIWARKA ---
+
+// 1. Provider przechowujący wpisany tekst
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+// 2. Provider, który filtruje wzory na podstawie wyszukiwania
+final filteredPatternsProvider = Provider<List<PatternModel>>((ref) {
+  final allPatterns = ref.watch(patternProvider);
+  final query = ref.watch(searchQueryProvider);
+
+  if (query.isEmpty) {
+    return allPatterns; // Jeśli nic nie wpisano, pokaż wszystko
+  }
+
+  // Filtruj, ignorując wielkość liter
+  return allPatterns
+      .where((pattern) =>
+          pattern.customName.toLowerCase().contains(query.toLowerCase()))
+      .toList();
+});
+
+// ---------------------
 
 class PatternNotifier extends StateNotifier<List<PatternModel>> {
   PatternNotifier() : super([]) {
