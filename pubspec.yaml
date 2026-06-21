@@ -23,11 +23,15 @@ dependencies:
   shared_preferences: ^2.2.2
   #Helpers
   url_launcher: ^6.2.1 # NOWY: Do otwierania linków/maila
-  package_info_plus: ^5.0.1 # NOWY: Do info o aplikacji
+  package_info_plus: ^9.0.1 # Zaktualizowano dla kompatybilności z nowym restart_app
   #UI
   google_fonts: ^6.1.0
   uuid: ^4.4.0
   intl: ^0.18.1
+  archive: ^3.6.1
+  share_plus: ^7.2.2
+  flutter_file_dialog: ^3.0.1
+  restart_app: ^1.8.3
 
   cupertino_icons: ^1.0.8
 
@@ -36,8 +40,17 @@ dev_dependencies:
     sdk: flutter
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  flutter_launcher_icons: ^0.13.1
 
   flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/app_icon.png"
+  adaptive_icon_background: "#C5AE95"
+  adaptive_icon_foreground: "assets/app_icon.png"
+

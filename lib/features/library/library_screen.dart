@@ -12,9 +12,9 @@ class LibraryScreen extends ConsumerWidget {
 
   void _addPdf(BuildContext context, WidgetRef ref) async {
     final fileService = ref.read(fileServiceProvider);
-    await fileService.pickAndSavePdf();
+    final success = await fileService.pickAndSavePdf();
 
-    if (context.mounted) {
+    if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Dodano nowy wzór!')),
       );
@@ -43,13 +43,13 @@ class LibraryScreen extends ConsumerWidget {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Szukaj po nazwie...',
-                prefixIcon: const Icon(Icons.search, color: kBrown),
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Theme.of(context).cardTheme.color,
+                fillColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
               // ZMIANA: Aktualizujemy provider przy każdej zmianie tekstu
               onChanged: (query) {
@@ -59,8 +59,11 @@ class LibraryScreen extends ConsumerWidget {
           ),
           Expanded(
             child: patterns.isEmpty
-                ? const Center(
-                    child: Text('Brak wzorów pasujących do wyszukiwania.', style: TextStyle(color: kBrown)),
+                ? Center(
+                    child: Text(
+                      'Brak wzorów pasujących do wyszukiwania.',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                    ),
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(8.0),
@@ -87,21 +90,89 @@ class LibraryScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: pattern.thumbnailPath.isNotEmpty
-                                    ? Image.file(
-                                        File(pattern.thumbnailPath),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
-                              ),
+                        Expanded(
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              pattern.thumbnailPath.isNotEmpty
+                                  ? Image.file(
+                                      File(pattern.thumbnailPath),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Center(
+                                      child: Icon(
+                                        Icons.picture_as_pdf,
+                                        size: 50,
+                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                      ),
+                                    ),
+                              if (pattern.status == 'finished')
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.9),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.check, color: Colors.white, size: 16),
+                                  ),
+                                ),
+                              if (pattern.status == 'in_progress')
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Text(
+                                      'W TOKU',
+                                      style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  pattern.customName,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      pattern.customName,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    if (pattern.currentRow > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.format_list_numbered,
+                                              size: 14,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Rząd: ${pattern.currentRow}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(context).colorScheme.primary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],

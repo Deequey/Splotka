@@ -17,7 +17,7 @@ class FileService {
 
   FileService(this._ref);
 
-  Future<void> pickAndSavePdf() async {
+  Future<bool> pickAndSavePdf() async {
     const XTypeGroup typeGroup = XTypeGroup(
       label: 'PDF Wzory',
       extensions: <String>['pdf'],
@@ -26,7 +26,7 @@ class FileService {
     final XFile? file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
 
     if (file == null) {
-      return;
+      return false;
     }
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -57,21 +57,23 @@ class FileService {
       // W razie błędu usuń niekompletne pliki
       final pdfFile = File(newFilePath);
       if (await pdfFile.exists()) await pdfFile.delete();
-      return;
+      return false;
     }
 
     final newPattern = PatternModel.createNew(
       id: uniqueId,
       fileName: file.name,
       path: newFilePath,
-      thumbnailPath: newThumbnailPath, // Zapisujemy ścieżkę do miniaturki
+      thumbnailPath: newThumbnailPath,
     );
 
     await _ref.read(patternProvider.notifier).addPattern(newPattern);
+    
+    return true;
   }
 
   Future<void> deletePattern(PatternModel pattern) async {
-    // Usuwanie pliku PDF
+    // 1. Usuwanie pliku PDF lokalnie
     try {
       final pdfFile = File(pattern.localFilePath);
       if (await pdfFile.exists()) {
@@ -81,7 +83,7 @@ class FileService {
       debugPrint('Błąd usuwania pliku PDF: $e');
     }
 
-    // Usuwanie miniaturki
+    // 3. Usuwanie miniaturki lokalnie
     try {
       final thumbnailFile = File(pattern.thumbnailPath);
       if (await thumbnailFile.exists()) {

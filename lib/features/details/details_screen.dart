@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
+import 'pdf_viewer_screen.dart';
 import '../../core/models/pattern_model.dart';
 import '../../data/services/file_service.dart';
 import '../../providers/pattern_providers.dart';
@@ -89,6 +91,85 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
             ),
           const SizedBox(height: 24),
 
+          // --- STATUS PROJEKTU (NOWOŚĆ) ---
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Wrap(
+              spacing: 8,
+              children: [
+                _buildStatusChip(context, pattern, 'planned', 'Planowany', Icons.calendar_today),
+                _buildStatusChip(context, pattern, 'in_progress', 'W trakcie', Icons.play_arrow),
+                _buildStatusChip(context, pattern, 'finished', 'Ukończony', Icons.check_circle),
+              ],
+            ),
+          ),
+
+          // --- LICZNIK RZĘDÓW (NOWOŚĆ) ---
+          Card(
+            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Licznik rzędów',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        Text(
+                          'Twój aktualny postęp w pracy',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: pattern.currentRow > 0 ? () => _updateRow(pattern, pattern.currentRow - 1) : null,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            '${pattern.currentRow}',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: () => _updateRow(pattern, pattern.currentRow + 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, size: 20),
+                    tooltip: 'Resetuj',
+                    onPressed: () => _showResetConfirmation(pattern),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // --- NOWA SEKCJA NOTATEK ---
           Card(
             child: Padding(
@@ -130,14 +211,63 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => OpenFilex.open(pattern.localFilePath),
-        label: const Text('Otwórz PDF'),
-        icon: const Icon(Icons.picture_as_pdf),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PdfViewerScreen(patternId: pattern.id),
+            ),
+          );
+        },
+        label: const Text('Otwórz Wzór'),
+        icon: const Icon(Icons.menu_book_rounded),
       ),
     );
   }
 
   // Metody pomocnicze przeniesione do State
+  Widget _buildStatusChip(BuildContext context, PatternModel pattern, String statusValue, String label, IconData icon) {
+    final isSelected = pattern.status == statusValue;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      avatar: Icon(icon, size: 16, color: isSelected ? Colors.white : null),
+      onSelected: (bool selected) {
+        if (selected) {
+          HapticFeedback.selectionClick();
+          final updatedPattern = pattern.copyWith(status: statusValue);
+          ref.read(patternProvider.notifier).updatePattern(updatedPattern);
+        }
+      },
+    );
+  }
+
+  void _updateRow(PatternModel pattern, int newVal) {
+    HapticFeedback.lightImpact();
+    final updatedPattern = pattern.copyWith(currentRow: newVal);
+    ref.read(patternProvider.notifier).updatePattern(updatedPattern);
+  }
+
+  void _showResetConfirmation(PatternModel pattern) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Zresetować licznik?'),
+        content: const Text('Czy na pewno chcesz wyzerować postęp rzędów?'),
+        actions: [
+          TextButton(child: const Text('Anuluj'), onPressed: () => Navigator.pop(ctx)),
+          TextButton(
+            child: const Text('Resetuj', style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              _updateRow(pattern, 0);
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _toggleFavourite(PatternModel pattern) {
     final updatedPattern = pattern.copyWith(isFavourite: !pattern.isFavourite);
     ref.read(patternProvider.notifier).updatePattern(updatedPattern);

@@ -25,8 +25,14 @@ class PatternModel extends HiveObject {
   @HiveField(6)
   late String userNotes;
 
-  @HiveField(7) // NOWE POLE
+  @HiveField(7)
   late String thumbnailPath;
+
+  @HiveField(8) // NOWE POLE
+  late int currentRow;
+
+  @HiveField(9)
+  late String status; // 'planned', 'in_progress', 'finished'
 
   PatternModel({
     required this.id,
@@ -36,14 +42,16 @@ class PatternModel extends HiveObject {
     required this.dateAdded,
     this.isFavourite = false,
     this.userNotes = '',
-    this.thumbnailPath = '', // NOWE
+    this.thumbnailPath = '',
+    this.currentRow = 0,
+    this.status = 'planned',
   });
 
   static PatternModel createNew({
     required String id,
     required String fileName,
     required String path,
-    required String thumbnailPath, // NOWE
+    required String thumbnailPath,
   }) {
     return PatternModel(
       id: id,
@@ -51,7 +59,9 @@ class PatternModel extends HiveObject {
       customName: fileName.replaceAll('.pdf', '').trim(),
       localFilePath: path,
       dateAdded: DateTime.now().toString(),
-      thumbnailPath: thumbnailPath, // NOWE
+      thumbnailPath: thumbnailPath,
+      currentRow: 0,
+      status: 'planned',
     );
   }
 
@@ -63,7 +73,9 @@ class PatternModel extends HiveObject {
       localFilePath: '',
       dateAdded: '',
       isFavourite: false,
-      thumbnailPath: '', // NOWE
+      thumbnailPath: '',
+      currentRow: 0,
+      status: 'planned',
     );
   }
 
@@ -75,7 +87,9 @@ class PatternModel extends HiveObject {
     String? dateAdded,
     bool? isFavourite,
     String? userNotes,
-    String? thumbnailPath, // NOWE
+    String? thumbnailPath,
+    int? currentRow,
+    String? status,
   }) {
     return PatternModel(
       id: id ?? this.id,
@@ -85,7 +99,9 @@ class PatternModel extends HiveObject {
       dateAdded: dateAdded ?? this.dateAdded,
       isFavourite: isFavourite ?? this.isFavourite,
       userNotes: userNotes ?? this.userNotes,
-      thumbnailPath: thumbnailPath ?? this.thumbnailPath, // NOWE
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      currentRow: currentRow ?? this.currentRow,
+      status: status ?? this.status,
     );
   }
 }

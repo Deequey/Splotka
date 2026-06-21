@@ -8,9 +8,9 @@ import 'package:easypatterns/main.dart';
 
 void main() {
   testWidgets('Renders main screen and finds the library title', (WidgetTester tester) async {
-    // Budujemy aplikację. Ponieważ CroftyApp używa Riverpod (jest ConsumerWidget),
+    // Budujemy aplikację. Ponieważ SplotkaApp używa Riverpod (jest ConsumerWidget),
     // musimy opakować ją w ProviderScope.
-    await tester.pumpWidget(const ProviderScope(child: CroftyApp()));
+    await tester.pumpWidget(const ProviderScope(child: SplotkaApp()));
 
     // Pierwszym ekranem jest Biblioteka (LibraryScreen).
     // Sprawdzamy, czy jej tytuł jest widoczny w AppBar.

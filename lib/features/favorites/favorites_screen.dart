@@ -18,8 +18,11 @@ class FavoritesScreen extends ConsumerWidget {
         title: const Text('Ulubione Wzory'),
       ),
       body: favoritePatterns.isEmpty
-          ? const Center(
-              child: Text('Brak ulubionych wzorów. Dodaj je, klikając gwiazdkę.', style: TextStyle(color: kBrown)),
+          ? Center(
+              child: Text(
+                'Brak ulubionych wzorów. Dodaj je, klikając gwiazdkę.',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+              ),
             )
           : GridView.builder(
               padding: const EdgeInsets.all(8.0),
@@ -52,15 +55,49 @@ class FavoritesScreen extends ConsumerWidget {
                                   File(pattern.thumbnailPath),
                                   fit: BoxFit.cover,
                                 )
-                              : Center(child: Icon(Icons.picture_as_pdf, size: 50, color: kBrown.withAlpha(128))),
+                              : Center(
+                                  child: Icon(
+                                    Icons.picture_as_pdf,
+                                    size: 50,
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                  ),
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            pattern.customName,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            children: [
+                              Text(
+                                pattern.customName,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              if (pattern.currentRow > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.format_list_numbered,
+                                        size: 14,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Rząd: ${pattern.currentRow}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(context).colorScheme.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       ],
