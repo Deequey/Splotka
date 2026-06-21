@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "52348342791",
+    "project_id": "splotka-cc7dc",
+    "storage_bucket": "splotka-cc7dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:52348342791:android:d675d6e98e079cdd2e90a2",
+        "android_client_info": {
+          "package_name": "com.deequey.easypatterns"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaxsHTVPVIZv-Cv4gVAmt5Z4hxg0WOlHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
