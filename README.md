@@ -1,4 +1,4 @@
-# easypatterns
+# Splotka
 
 Keep your patterns in one place
 
