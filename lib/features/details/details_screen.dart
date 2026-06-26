@@ -234,7 +234,9 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
       avatar: Icon(icon, size: 16, color: isSelected ? Colors.white : null),
       onSelected: (bool selected) {
         if (selected) {
-          HapticFeedback.selectionClick();
+          if (ref.read(hapticNotifierProvider)) {
+            HapticFeedback.selectionClick();
+          }
           final updatedPattern = pattern.copyWith(status: statusValue);
           ref.read(patternProvider.notifier).updatePattern(updatedPattern);
         }
@@ -243,7 +245,9 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
   }
 
   void _updateRow(PatternModel pattern, int newVal) {
-    HapticFeedback.lightImpact();
+    if (ref.read(hapticNotifierProvider)) {
+      HapticFeedback.lightImpact();
+    }
     final updatedPattern = pattern.copyWith(currentRow: newVal);
     ref.read(patternProvider.notifier).updatePattern(updatedPattern);
   }
