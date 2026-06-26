@@ -48,8 +48,13 @@ class FileService {
       final pdfDoc = await PdfDocument.openFile(newFilePath);
       final page = await pdfDoc.getPage(1);
       final pageImage = await page.render(width: page.width, height: page.height);
-      await File(newThumbnailPath).writeAsBytes(pageImage!.bytes);
+      
+      if (pageImage != null) {
+        await File(newThumbnailPath).writeAsBytes(pageImage.bytes);
+      }
+      
       await page.close();
+      await pdfDoc.close();
       // -----------------------------
 
     } catch (e) {

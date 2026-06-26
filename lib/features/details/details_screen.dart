@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:open_filex/open_filex.dart';
 
 import 'pdf_viewer_screen.dart';
+import '../../core/theme.dart';
 import '../../core/models/pattern_model.dart';
 import '../../data/services/file_service.dart';
 import '../../providers/pattern_providers.dart';

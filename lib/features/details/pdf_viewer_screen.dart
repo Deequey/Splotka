@@ -4,11 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../../data/services/translation_service.dart';
 import '../../data/services/ocr_service.dart';
-
+import '../../core/theme.dart';
 import '../../core/models/pattern_model.dart';
 import '../../providers/pattern_providers.dart';
+
+class TranslatedBlock {
+  final Rect rect;
+  final String text;
+  TranslatedBlock({required this.rect, required this.text});
+}
 
 class PdfViewerScreen extends ConsumerStatefulWidget {
   final String patternId;
@@ -23,7 +30,10 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
   late PdfControllerPinch _pdfController;
   final TranslationService _translationService = TranslationService();
   final OcrService _ocrService = OcrService();
+  
   bool _isTranslating = false;
+  // Mapa przechowująca tłumaczenia dla poszczególnych stron (klucz to numer strony)
+  final Map<int, List<TranslatedBlock>> _cachedTranslations = {};
 
   @override
   void initState() {
@@ -42,127 +52,38 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
     super.dispose();
   }
 
-  Future<void> _translateCurrentPage() async {
-    setState(() => _isTranslating = true);
-    
-    try {
-      final pattern = ref.read(patternProvider).firstWhere((p) => p.id == widget.patternId);
-      final document = await PdfDocument.openFile(pattern.localFilePath);
-      
-      // Pobieramy aktualną stronę (indeks zaczyna się od 1 w pdfx)
-      final int currentPage = _pdfController.page;
-      final page = await document.getPage(currentPage);
-      
-      // Renderujemy stronę do obrazu wysokiej jakości dla lepszego OCR
-      final pageImage = await page.render(
-        width: page.width * 2, 
-        height: page.height * 2,
-        format: PdfPageImageFormat.jpg,
-        quality: 100,
-      );
-
-      if (pageImage == null) throw Exception("Nie udało się wyrenderować strony");
-
-      // Zapisujemy tymczasowo
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/temp_ocr_page.jpg');
-      await tempFile.writeAsBytes(pageImage.bytes);
-
-      // Rozpoznajemy tekst (OCR)
-      final recognizedText = await _ocrService.recognizeText(tempFile.path);
-      
-      if (recognizedText.trim().isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Nie znaleziono tekstu na tej stronie.')),
-          );
-        }
-        return;
-      }
-
-      // Tłumaczymy rozpoznany tekst
-      final translated = await _translationService.translate(recognizedText);
-      
-      if (mounted) {
-        _showTranslationDialog(recognizedText, translated);
-      }
-
-      await page.close();
-      await document.close();
-      if (await tempFile.exists()) await tempFile.delete();
-      
-    } catch (e) {
-      debugPrint('Błąd OCR/Tłumaczenia: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wystąpił błąd: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isTranslating = false);
-    }
-  }
-
-  void _showTranslationDialog(String original, String translated) {
-    showModalBottomSheet(
+  void _showWipDialog() {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Icon(Icons.translate, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 12),
-                Text(
-                  'Szybkie tłumaczenie',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text('TEKST ORYGINALNY:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-            const SizedBox(height: 8),
-            Text(original, style: const TextStyle(fontStyle: FontStyle.italic)),
-            const SizedBox(height: 24),
-            const Text('TŁUMACZENIE (PL):', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue)),
-            const SizedBox(height: 8),
-            Text(
-              translated,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Zamknij'),
-              ),
-            ),
-            const SizedBox(height: 16),
+            Icon(Icons.construction, color: Colors.orange),
+            SizedBox(width: 10),
+            Text('Funkcja w budowie'),
           ],
         ),
+        content: const Text(
+          'Obecnie pracujemy nad ulepszeniem modułu tłumaczeń, aby zapewnić najwyższą jakość przekładu instrukcji szydełkowych. \n\nTa funkcja zostanie udostępniona wkrótce w pełnej wersji!',
+          textAlign: TextAlign.justify,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Rozumiem', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _translateCurrentPage() async {
+    _showWipDialog();
+    return;
+    /*
+    final int currentPage = _pdfController.page;
+    ...
+    */
   }
 
   void _updateRow(PatternModel pattern, int newVal) {
@@ -177,26 +98,45 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
   Widget build(BuildContext context) {
     final patterns = ref.watch(patternProvider);
     final pattern = patterns.firstWhere((p) => p.id == widget.patternId, orElse: () => PatternModel.empty());
+    
+    // Bezpieczne pobieranie strony - zapobiega crashom przed załadowaniem
+    int currentPage = 1;
+    try {
+      currentPage = _pdfController.page;
+    } catch (_) {}
+
+    final hasTranslation = _cachedTranslations.containsKey(currentPage);
 
     if (pattern.id.isEmpty) return const Scaffold(body: Center(child: Text('Błąd pliku')));
 
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(pattern.customName, style: const TextStyle(fontSize: 16)),
-        backgroundColor: Colors.black.withOpacity(0.5),
+        title: Text(
+          pattern.customName, 
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)
+        ),
+        backgroundColor: const Color(0xFF121212),
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white, size: 28),
+        elevation: 8,
         actions: [
           if (_isTranslating)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+              child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 3, color: Colors.blueAccent)),
             )
           else
-            IconButton(
-              icon: const Icon(Icons.translate),
-              tooltip: 'Tłumacz stronę',
-              onPressed: _translateCurrentPage,
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.translate, 
+                  color: Colors.redAccent,
+                  size: 28,
+                ),
+                onPressed: _translateCurrentPage,
+              ),
             ),
         ],
       ),
@@ -204,22 +144,20 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
         children: [
           PdfViewPinch(
             controller: _pdfController,
+            onPageChanged: (_) => setState(() {}), // Odśwież stan ikony przy zmianie strony
           ),
-          // --- PŁYWAJĄCY PANEL KONTROLNY ---
+          
+          // PŁYWAJĄCY PANEL KONTROLNY
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
+                  BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 15, offset: const Offset(0, 5)),
                 ],
               ),
               child: Row(
@@ -229,32 +167,18 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
                     icon: const Icon(Icons.remove_circle_outline),
                     onPressed: pattern.currentRow > 0 ? () => _updateRow(pattern, pattern.currentRow - 1) : null,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'RZĄD',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-                        ),
-                      ),
-                      Text(
-                        '${pattern.currentRow}',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
+                      Text('RZĄD', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary.withOpacity(0.7))),
+                      Text('${pattern.currentRow}', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
                     ],
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   IconButton(
                     icon: const Icon(Icons.add_circle),
-                    iconSize: 36,
+                    iconSize: 40,
                     color: Theme.of(context).colorScheme.primary,
                     onPressed: () => _updateRow(pattern, pattern.currentRow + 1),
                   ),
@@ -263,6 +187,61 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showTranslationList(int pageIndex) {
+    final blocks = _cachedTranslations[pageIndex] ?? [];
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, controller) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2))),
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Icon(Icons.description_outlined, color: Colors.blueAccent),
+                  SizedBox(width: 12),
+                  Text('Instrukcja po polsku (strona)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: controller,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: blocks.length,
+                itemBuilder: (context, index) {
+                  final block = blocks[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+                    ),
+                    child: Text(
+                      block.text, 
+                      style: const TextStyle(fontSize: 16, height: 1.4, fontWeight: FontWeight.w500)
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
